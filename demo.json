@@ -1,0 +1,6 @@
+{
+    "len_byte": 10,
+    "ID": "2+int", 
+    "IP":"32+int", 
+    "Port": "16+int"
+}
