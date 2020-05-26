@@ -104,16 +104,17 @@ class IotProtocolTester:
             s.close()
         return self.hostIp
 
-iot = IotProtocolTester("demo.json",10086)
+# iot = IotProtocolTester("demo.json",10086)
 
-data = struct.pack('!Bf', 10, 35, 12, 13)
-
-
-
-print(iot.pLen)
-for i in iot.pItemBitFields:
-    print(i)
-    pass
+data = struct.pack('!4Bf', 10, 35, 12, 13, 2.333)
+print(str(data))
+arr=(1,2,3,4)
+arr,fl = struct.unpack('!4Bf',data)
+print(arr,"\n",fl)
+# print(iot.pLen)
+# for i in iot.pItemBitFields:
+#     print(i)
+#     pass
     # # 打开json文件并读取所有内容到json_text
     # json_text= open("t.json").read()
 
