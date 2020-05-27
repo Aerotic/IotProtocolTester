@@ -1,6 +1,5 @@
 {
-    "len_byte": 12,
-    "ID": "4+int",  
-    "float": "32+float",
-    "ID1": "2+int"
+    "ID": "B",  
+    "DatArr": "4B",
+    "Str": "5s" 
 }
