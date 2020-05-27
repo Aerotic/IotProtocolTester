@@ -5,7 +5,7 @@ import struct
 
 class IotProtocolTester:
 
-    # 结果存在一个3元组的数组的list（可以看做是一个数组）
+    # 结果存在一个3元组的数组的list（list可以看做是一个数组）
     # 格式为：
     # 0号：项目名称 String
     # 1号：bit长度 int
@@ -25,6 +25,9 @@ class IotProtocolTester:
     #       char[]      <->       s     标准长度
     #       uint8_t     <->       B     标准长度
     pItems = list()
+
+    #
+    pItemsData = list()
 
     # struct.pack unpack所需的格式解析字符串
     pFmtStr = '!'
@@ -73,7 +76,12 @@ class IotProtocolTester:
             else:
                 byte_len = int(str(self.jsonData[item])[0])
                 type = str(self.jsonData[item])[1]
-                
+            
+            #以格式串“b4sb” 数据(12,'0000',3)为例
+            # 在struct.unpack后，“3”的位置在返回的元组得2号位置而非4号位置
+            if type == 's':
+                byte_len = 1
+
             startAddr = self.byteCnt
             self.byteCnt = self.byteCnt + byte_len
 
@@ -150,7 +158,21 @@ class IotProtocolTester:
 
 
     def unpack(self,dat):
-        tmpTuple = tuple()
+        tup = tuple() # struct.unpack返回值为元组，故用一个元组中转一下
+        tup = struct.unpack(self.pFmtStr,dat)
+        for i in self.pItems:
+            start = i[1]
+            end = start + i[2]
+            
+            if i[3] == 'char[]':
+                tmp = str(tup[start], encoding = "utf8") # 字符串无论多长都是按照元组的一个元素计算，故用起始位提取即可
+                iData = tmp.rstrip('\x00') # 此步为了去除尾部占位的‘\x00’
+                # 字符串尾部特意加‘\x00’的吔屎去
+            elif i[2] == 1: # 处理非字符串，单个元素的情况
+                iData = list(tup[start:end]).pop()
+            else: # 处理非字符串，有多个元素的数组的情况
+                iData = list(tup[start:end])
+            self.pItemsData.append(i.__add__((iData,)))
         
 
     def funcname(self, parameter_list):
@@ -164,12 +186,23 @@ for i in iot.pItems:
 # 名，类型，长度，起始地址
 
 
-# tri = tuple()
-data = struct.pack('!B4B5s', 5, 10, 35, 12, 13, bytes('12'.encode('utf-8')))
+tri = tuple()
+fmt = '!B2f4B5sB'
+data = struct.pack(fmt, 5, 2.333,6.66,10, 35, 12, 13, bytes('12'.encode('utf-8')), 13)
 # print(str(data))
 # arr=(1,2,3,4)
-# tri = struct.unpack('!B4B5s',data)
-# l = list(tri[1:4])
+tri = struct.unpack(fmt,data)
+print(tri[8])
+print("-------------------------")
+iot.unpack(data)
+for iD in iot.pItemsData:
+    print(iD)
+    print(type(iD[4]))
+    pass
+# print(tri)
+# l = list(tri[1:])
+# print(l)
+
 # print(data[4])
 # print(data[5])
 # print(data[6])
